@@ -36,3 +36,49 @@ def getHtml(url):
     return html
 
     
+
+def getFeatures(html):
+    counter= float('inf')
+    urls = html.select('.s-main-slot')
+    html = ''
+    
+    for i in urls:
+        
+        html += str(i) 
+    html = BeautifulSoup(html,'html.parser')
+    urls = html.select('.a-link-normal')
+    html = ''
+    
+    for i in urls:
+        
+        html += str(i) 
+    html = BeautifulSoup(html,'html.parser')
+    urls = html.select('.a-text-normal')
+    url=[]
+
+    for i in urls:
+        o = BeautifulSoup(str(i),'html.parser').select('.a-link-normal .a-text-normal')
+        if o != []:
+            url.append(i)
+
+
+
+    idx = 0
+    for i in range(len(url)):
+
+        url[i - idx] = url[i - idx].attrs['href']
+        
+        if url[i - idx][0] == '/':
+            url[i - idx] = 'https://www.amazon.es' + url[i - idx]
+        
+        
+        if len(url[i - idx]) < counter:
+            counter = len(url[i - idx])
+    for i in url:
+        print(i + '\n')
+
+def manager():
+    html = getHtml('https://www.amazon.es/s?rh=n%3A14565215031&brr=1&pd_rd_r=65cb3175-d957-4fb4-a02b-536f48ebc2eb&pd_rd_w=Apy2S&pd_rd_wg=R4EBz&rd=1&ref=Oct_d_odnav_d_14565170031_0')
+    getFeatures(html)
+
+manager()
