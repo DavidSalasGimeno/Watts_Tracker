@@ -1,11 +1,11 @@
 import requests 
-from time import sleep
 from bs4 import BeautifulSoup
 
 
 
-def getHtml(url):  
 
+def getHtml(url):  
+    
     headers = {
         'dnt': '1',
         'upgrade-insecure-requests': '1',
@@ -19,9 +19,10 @@ def getHtml(url):
     }
 
     # Download the page using requests
-    print("Downloading %s"%url)
+    #print("Downloading %s"%url)
+    
     r = requests.get(url, headers=headers)
-
+    
     # Simple check to check if page was blocked (Usually 503)
     if 500 < r.status_code:
         if "To discuss automated access to Amazon data please contact" in r.text:
@@ -36,3 +37,75 @@ def getHtml(url):
     return html
 
     
+
+def getUrls(url, number=33):
+    html = getHtml(url)
+    urls = html.select('.a-link-normal.a-text-normal')
+    titles = html.select('.a-size-base-plus.a-color-base.a-text-normal')
+    urls = urls[::2]
+    for i in range(number):
+
+        urls[i] = urls[i].attrs['href']
+
+        if number == 1 and urls[i][:4] == '/gp/':
+
+            return False
+
+
+        
+        elif urls[i][:4] == '/gp/':
+            urls[i] = getUrls('https://www.amazon.es/s?k=' + titles[i].string, 1)
+
+            if urls[i]:
+                urls[i] = 'https://www.amazon.es' + urls[i][0]
+                
+            else:
+                urls[i] = None
+
+        else:
+            urls[i] = 'https://www.amazon.es' + urls[i]
+
+
+    
+
+    return urls
+
+
+def getFeatures(url):
+    html = getHtml(url)
+
+
+    title = html.find("span", {"id": "productTitle"}).string.replace('\n','')
+
+
+
+    stars = html.select('.a-icon-alt')
+    stars = stars[0].string
+    stars = stars[0:3]
+    stars = stars.replace(',', '.')
+    stars = float(stars)
+
+
+    prize = html.select('.a-offscreen')
+    prize = prize[0].string
+    prize = prize.replace('.', '')
+    prize = prize.replace(',', '.')
+    prize = prize.replace('€', '')
+    prize = float(prize)
+
+
+
+
+def manager(url):
+    
+    urls = getUrls(url)
+
+    for url in urls:
+
+        features = getFeatures(url)
+        break
+        
+
+
+
+
